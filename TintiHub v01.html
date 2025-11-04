@@ -1,0 +1,2538 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TintiHub - Хостинг репозиториев</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7c3aed;
+            --primary-dark: #5b21b6;
+            --secondary: #3b82f6;
+            --dark: #0f0a1e;
+            --dark-2: #1a1329;
+            --dark-3: #251c3a;
+            --text: #e9d5ff;
+            --text-secondary: #c4b5fd;
+            --border: #4c1d95;
+            --success: #10b981;
+            --danger: #ef4444;
+            --verified: #3b82f6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-2) 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Галочка верификации */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: var(--verified);
+            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            margin-left: 5px;
+            position: relative;
+            cursor: help;
+        }
+
+        .verified-badge:hover::after {
+            content: 'Проверенный аккаунт';
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark-2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            white-space: nowrap;
+            font-size: 12px;
+            border: 1px solid var(--border);
+            z-index: 1000;
+        }
+
+        /* Навигация */
+        .navbar {
+            background: var(--dark-2);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-left, .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .search-bar {
+            background: var(--dark-3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 300px;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            color: var(--text);
+            outline: none;
+            width: 100%;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+            font-size: 14px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 10px;
+        }
+
+        .profile-pic {
+            cursor: pointer;
+        }
+
+        .profile-pic img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+        }
+
+        /* Hero секция */
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        /* Кнопки */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--dark-3);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalAppear 0.3s ease;
+        }
+
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: var(--text);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            background: var(--dark-3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* reCAPTCHA стиль */
+        .captcha-container {
+            background: var(--dark-3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .captcha-challenge {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .captcha-question {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        .captcha-input {
+            width: 80px !important;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .captcha-refresh {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .slider-captcha {
+            width: 100%;
+            height: 40px;
+            background: var(--dark-3);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .slider-button {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50px;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            user-select: none;
+        }
+
+        .slider-button:active {
+            cursor: grabbing;
+        }
+
+        .slider-text {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .slider-captcha.completed .slider-button {
+            background: var(--success);
+        }
+
+        .slider-captcha.completed .slider-text {
+            color: var(--success);
+        }
+
+        /* Email верификация */
+        .email-verification {
+            background: var(--dark-3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .email-box {
+            background: var(--dark-2);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+
+        .verification-code {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            text-align: center;
+            letter-spacing: 5px;
+            margin: 10px 0;
+        }
+
+        /* Репозитории */
+        .repositories {
+            padding: 40px 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .section-header h2 {
+            font-size: 28px;
+        }
+
+        .repo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+            gap: 20px;
+        }
+
+        .repo-card {
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .repo-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2);
+        }
+
+        .repo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .repo-header h3 {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .repo-header h3 a {
+            color: var(--secondary);
+            text-decoration: none;
+        }
+
+        .repo-header h3 a:hover {
+            text-decoration: underline;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid var(--success);
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .badge-private {
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+        }
+
+        .repo-description {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .repo-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+
+        .repo-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .repo-owner {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .updated {
+            margin-left: auto;
+        }
+
+        /* Активность */
+        .activity {
+            padding: 40px 20px;
+        }
+
+        .activity h2 {
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .activity-list {
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            color: var(--primary);
+            font-size: 20px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-content a {
+            color: var(--secondary);
+            text-decoration: none;
+        }
+
+        .activity-content a:hover {
+            text-decoration: underline;
+        }
+
+        .time {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-left: 10px;
+        }
+
+        /* Уведомления */
+        .notifications-panel {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .notifications-panel.active {
+            display: block;
+        }
+
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .notification-item:hover {
+            background: var(--dark-3);
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Профиль */
+        .profile-panel {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 250px;
+            display: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-panel.active {
+            display: block;
+        }
+
+        .profile-menu-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-menu-item:hover {
+            background: var(--dark-3);
+        }
+
+        .profile-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Страница профиля */
+        .profile-page {
+            padding: 40px 20px;
+            display: none;
+        }
+
+        .profile-page.active {
+            display: block;
+        }
+
+        .profile-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+            align-items: start;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+        }
+
+        .profile-info h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-bio {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .verification-status {
+            display: inline-block;
+            padding: 8px 16px;
+            background: var(--dark-3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .verification-status.verified {
+            border-color: var(--verified);
+            color: var(--verified);
+        }
+
+        /* Страница настроек */
+        .settings-page {
+            padding: 40px 20px;
+            display: none;
+        }
+
+        .settings-page.active {
+            display: block;
+        }
+
+        .settings-section {
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .settings-section h3 {
+            margin-bottom: 20px;
+        }
+
+        .verification-request {
+            background: var(--dark-3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        /* Страница авторизации */
+        .auth-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-page.hidden {
+            display: none;
+        }
+
+        .auth-container {
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            background: var(--dark-3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-color: var(--primary);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .error-message {
+            background: var(--danger);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .success-message {
+            background: var(--success);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message.active {
+            display: block;
+        }
+
+        /* Страница репозитория */
+        .repo-page {
+            display: none;
+            padding: 40px 20px;
+        }
+
+        .repo-page.active {
+            display: block;
+        }
+
+        .repo-page-header {
+            margin-bottom: 30px;
+        }
+
+        .repo-page-title {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .repo-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .code-block {
+            background: var(--dark-3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            color: var(--text);
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+
+        .file-list {
+            list-style: none;
+        }
+
+        .file-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-item:hover {
+            background: var(--dark-2);
+        }
+
+        .commit-form {
+            background: var(--dark-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        /* Анимация звездочек */
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #7c3aed;
+            border-radius: 50%;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .repo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-left, .nav-right {
+                gap: 10px;
+            }
+            
+            .search-bar {
+                width: 150px;
+            }
+            
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .notifications-panel,
+            .profile-panel {
+                right: 10px;
+                width: calc(100% - 20px);
+            }
+
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        .user-welcome {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .repo-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--secondary);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box i {
+            color: var(--secondary);
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Фон со звездами -->
+    <div class="stars-container" id="starsContainer"></div>
+
+    <!-- Страница авторизации -->
+    <div class="auth-page" id="authPage">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1><i class="fas fa-code-branch"></i> TintiHub</h1>
+                <p>Платформа для разработчиков</p>
+            </div>
+
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="switchAuthTab('login')">Вход</div>
+                <div class="auth-tab" onclick="switchAuthTab('register')">Регистрация</div>
+            </div>
+
+            <div class="error-message" id="authError"></div>
+            <div class="success-message" id="authSuccess"></div>
+
+            <!-- Форма входа -->
+            <form class="auth-form active" id="loginForm" onsubmit="login(event)">
+                <div class="form-group">
+                    <label>Email или логин</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                
+                <!-- Slider CAPTCHA для входа -->
+                <div class="captcha-container">
+                    <div class="slider-captcha" id="loginSliderCaptcha">
+                        <div class="slider-text" id="loginSliderText">Сдвиньте вправо →</div>
+                        <div class="slider-button" id="loginSliderButton">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="loginSubmitBtn" style="width: 100%;" disabled>
+                    <i class="fas fa-sign-in-alt"></i> Войти
+                </button>
+            </form>
+
+            <!-- Форма регистрации -->
+            <form class="auth-form" id="registerForm" onsubmit="register(event)">
+                <div class="form-group">
+                    <label>Имя пользователя</label>
+                    <input type="text" id="regUsername" required minlength="3">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="regPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Подтвердите пароль</label>
+                    <input type="password" id="regPasswordConfirm" required>
+                </div>
+
+                <!-- Math CAPTCHA для регистрации -->
+                <div class="captcha-container">
+                    <div class="captcha-challenge">
+                        <span class="captcha-question" id="mathQuestion">5 + 3 = ?</span>
+                        <input type="number" class="captcha-input" id="mathAnswer" required>
+                        <button type="button" class="captcha-refresh" onclick="generateMathCaptcha()">
+                            <i class="fas fa-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-user-plus"></i> Зарегистрироваться
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно верификации email -->
+    <div class="modal" id="emailVerificationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-envelope"></i> Подтверждение Email</h2>
+            </div>
+
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                Мы отправили код подтверждения на вашу почту
+            </div>
+
+            <div class="email-verification">
+                <h4>📧 Входящие: <span id="verificationEmail"></span></h4>
+                <div class="email-box">
+                    <p><strong>От:</strong> no-reply@tintihub.com</p>
+                    <p><strong>Тема:</strong> Подтверждение регистрации</p>
+                    <hr style="margin: 10px 0; border-color: var(--border);">
+                    <p>Привет! Спасибо за регистрацию в TintiHub!</p>
+                    <p>Ваш код подтверждения:</p>
+                    <div class="verification-code" id="displayCode"></div>
+                    <p style="font-size: 12px; color: var(--text-secondary);">
+                        Код действителен 10 минут
+                    </p>
+                </div>
+            </div>
+
+            <form onsubmit="verifyEmail(event)">
+                <div class="form-group">
+                    <label>Введите код подтверждения</label>
+                    <input type="text" id="verificationCodeInput" placeholder="000000" required maxlength="6" style="text-align: center; font-size: 20px; letter-spacing: 5px;">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-check"></i> Подтвердить
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="resendCode()" style="width: 100%; margin-top: 10px;">
+                    <i class="fas fa-redo"></i> Отправить код повторно
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Основное приложение -->
+    <div id="mainApp" class="hidden">
+        <!-- Навигация -->
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-left">
+                    <a class="logo" onclick="showHome()">
+                        <i class="fas fa-code-branch"></i>
+                        TintiHub
+                    </a>
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Поиск репозиториев...">
+                    </div>
+                </div>
+                <div class="nav-right">
+                    <span class="user-welcome">
+                        Привет, <strong id="currentUsername"></strong><span id="navVerifiedBadge"></span>!
+                    </span>
+                    <a class="nav-link" onclick="showHome()">Обзор</a>
+                    <a class="nav-link" onclick="showMyRepos()">Мои репозитории</a>
+                    <a class="nav-link" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notifBadge">0</span>
+                    </a>
+                    <a class="nav-link" onclick="openNewRepoModal()">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                    <a class="profile-pic" onclick="toggleProfile()">
+                        <img id="navAvatar" src="" alt="Profile">
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Панель уведомлений -->
+        <div class="notifications-panel" id="notificationsPanel">
+            <div id="notificationsList"></div>
+        </div>
+
+        <!-- Панель профиля -->
+        <div class="profile-panel" id="profilePanel">
+            <div class="profile-menu-item" onclick="showProfile()">
+                <i class="fas fa-user"></i> Мой профиль
+            </div>
+            <div class="profile-menu-item" onclick="showMyRepos()">
+                <i class="fas fa-folder"></i> Мои репозитории
+            </div>
+            <div class="profile-menu-item" onclick="showSettings()">
+                <i class="fas fa-cog"></i> Настройки
+            </div>
+            <div class="profile-menu-item" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Выйти
+            </div>
+        </div>
+
+        <!-- Главная страница -->
+        <div id="homePage">
+            <section class="hero">
+                <div class="container">
+                    <h1>Добро пожаловать в TintiHub</h1>
+                    <p>Платформа для хостинга и совместной разработки проектов</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary" onclick="openNewRepoModal()">
+                            <i class="fas fa-rocket"></i> Создать репозиторий
+                        </button>
+                        <button class="btn btn-secondary" onclick="showProfile()">
+                            <i class="fas fa-user"></i> Мой профиль
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="repositories">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Все репозитории</h2>
+                        <button class="btn btn-sm" onclick="openNewRepoModal()">
+                            <i class="fas fa-plus"></i> Новый
+                        </button>
+                    </div>
+                    <div class="repo-grid" id="repoGrid"></div>
+                </div>
+            </section>
+
+            <section class="activity">
+                <div class="container">
+                    <h2>Последняя активность</h2>
+                    <div class="activity-list" id="activityList"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Страница профиля -->
+        <div class="profile-page" id="profilePage">
+            <div class="container">
+                <button class="btn btn-secondary btn-sm" onclick="showHome()">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </button>
+                
+                <div class="profile-header">
+                    <img class="profile-avatar" id="profileAvatar" src="" alt="Avatar">
+                    <div class="profile-info">
+                        <h1 id="profileUsername"></h1>
+                        <div class="verification-status" id="verificationStatus">
+                            <i class="fas fa-clock"></i> Не верифицирован
+                        </div>
+                        <p class="profile-bio" id="profileBio"></p>
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-number" id="repoCount">0</div>
+                                <div class="stat-label">Репозиториев</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="commitCount">0</div>
+                                <div class="stat-label">Коммитов</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="starCount">0</div>
+                                <div class="stat-label">Звезд</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="showSettings()" style="margin-top: 20px;">
+                            <i class="fas fa-edit"></i> Редактировать профиль
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h2>Мои репозитории</h2>
+                </div>
+                <div class="repo-grid" id="userRepoGrid"></div>
+            </div>
+        </div>
+
+        <!-- Страница настроек -->
+        <div class="settings-page" id="settingsPage">
+            <div class="container">
+                <button class="btn btn-secondary btn-sm" onclick="showProfile()">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </button>
+
+                <h1 style="margin: 30px 0;">Настройки</h1>
+
+                <div class="settings-section">
+                    <h3><i class="fas fa-certificate"></i> Верификация аккаунта</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 15px;">
+                        Получите синюю галочку и станьте проверенным разработчиком!
+                    </p>
+                    
+                    <div id="verificationSection"></div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Профиль</h3>
+                    <form onsubmit="updateProfile(event)">
+                        <div class="form-group">
+                            <label>Имя пользователя</label>
+                            <input type="text" id="settingsUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="settingsEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Биография</label>
+                            <textarea id="settingsBio" placeholder="Расскажите о себе..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Сохранить
+                        </button>
+                    </form>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Изменить пароль</h3>
+                    <form onsubmit="changePassword(event)">
+                        <div class="form-group">
+                            <label>Текущий пароль</label>
+                            <input type="password" id="currentPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Новый пароль</label>
+                            <input type="password" id="newPassword" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label>Подтвердите новый пароль</label>
+                            <input type="password" id="newPasswordConfirm" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-key"></i> Изменить пароль
+                        </button>
+                    </form>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Опасная зона</h3>
+                    <button class="btn btn-danger" onclick="deleteAccount()">
+                        <i class="fas fa-trash"></i> Удалить аккаунт
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Страница репозитория -->
+        <div class="repo-page" id="repoPage">
+            <div class="container">
+                <button class="btn btn-secondary btn-sm" onclick="showHome()">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </button>
+
+                <div class="repo-page-header">
+                    <h1 class="repo-page-title" id="repoTitle"></h1>
+                    <p class="repo-description" id="repoDesc"></p>
+                    <div class="repo-actions">
+                        <button class="btn btn-primary btn-sm" onclick="toggleStar()">
+                            <i class="fas fa-star"></i> <span id="starText">Star</span>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="alert('Репозиторий форкнут!')">
+                            <i class="fas fa-code-branch"></i> Fork
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="cloneRepo()">
+                            <i class="fas fa-download"></i> Clone
+                        </button>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <h3><i class="fas fa-folder-open"></i> Файлы</h3>
+                    <ul class="file-list" id="fileList"></ul>
+                </div>
+
+                <div class="commit-form">
+                    <h3><i class="fas fa-code-commit"></i> Новый коммит</h3>
+                    <form onsubmit="makeCommit(event)">
+                        <div class="form-group">
+                            <label>Имя файла</label>
+                            <input type="text" id="commitFileName" placeholder="index.html" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Содержимое файла</label>
+                            <textarea id="commitFileContent" placeholder="Введите код..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Сообщение коммита</label>
+                            <input type="text" id="commitMessage" placeholder="Добавлен новый файл" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Сделать коммит
+                        </button>
+                    </form>
+                </div>
+
+                <div class="code-block">
+                    <h3><i class="fas fa-history"></i> История коммитов</h3>
+                    <div class="activity-list" id="commitHistory"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно нового репозитория -->
+        <div class="modal" id="newRepoModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Создать новый репозиторий</h2>
+                    <button class="close-modal" onclick="closeModal('newRepoModal')">&times;</button>
+                </div>
+                <div class="success-message" id="repoSuccessMessage"></div>
+                <form onsubmit="createRepo(event)">
+                    <div class="form-group">
+                        <label>Название репозитория *</label>
+                        <input type="text" id="repoName" placeholder="my-awesome-project" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Описание</label>
+                        <textarea id="repoDescription" placeholder="Краткое описание проекта..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Видимость</label>
+                        <select id="repoVisibility">
+                            <option value="public">Public - Доступен всем</option>
+                            <option value="private">Private - Только для вас</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Язык программирования</label>
+                        <select id="repoLanguage">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="typescript">TypeScript</option>
+                            <option value="java">Java</option>
+                            <option value="csharp">C#</option>
+                            <option value="cpp">C++</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Создать репозиторий
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== СИСТЕМА ХРАНЕНИЯ ====================
+        
+        class Storage {
+            static getUsers() {
+                return JSON.parse(localStorage.getItem('tintihub_users') || '[]');
+            }
+
+            static saveUsers(users) {
+                localStorage.setItem('tintihub_users', JSON.stringify(users));
+            }
+
+            static getCurrentUser() {
+                return JSON.parse(localStorage.getItem('tintihub_current_user') || 'null');
+            }
+
+            static setCurrentUser(user) {
+                localStorage.setItem('tintihub_current_user', JSON.stringify(user));
+            }
+
+            static getRepos() {
+                return JSON.parse(localStorage.getItem('tintihub_repos') || '[]');
+            }
+
+            static saveRepos(repos) {
+                localStorage.setItem('tintihub_repos', JSON.stringify(repos));
+            }
+
+            static getActivities() {
+                return JSON.parse(localStorage.getItem('tintihub_activities') || '[]');
+            }
+
+            static saveActivities(activities) {
+                localStorage.setItem('tintihub_activities', JSON.stringify(activities));
+            }
+
+            static getNotifications() {
+                return JSON.parse(localStorage.getItem('tintihub_notifications') || '[]');
+            }
+
+            static saveNotifications(notifications) {
+                localStorage.setItem('tintihub_notifications', JSON.stringify(notifications));
+            }
+        }
+
+        // ==================== CAPTCHA ====================
+        
+        let mathCaptchaAnswer = 0;
+        let loginSliderCompleted = false;
+        let pendingRegistration = null;
+
+        function generateMathCaptcha() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            const operations = ['+', '-', '*'];
+            const operation = operations[Math.floor(Math.random() * operations.length)];
+            
+            let answer;
+            switch(operation) {
+                case '+': answer = num1 + num2; break;
+                case '-': answer = num1 - num2; break;
+                case '*': answer = num1 * num2; break;
+            }
+            
+            mathCaptchaAnswer = answer;
+            document.getElementById('mathQuestion').textContent = `${num1} ${operation} ${num2} = ?`;
+            document.getElementById('mathAnswer').value = '';
+        }
+
+        function initLoginSlider() {
+            const slider = document.getElementById('loginSliderButton');
+            const container = document.getElementById('loginSliderCaptcha');
+            const text = document.getElementById('loginSliderText');
+            const submitBtn = document.getElementById('loginSubmitBtn');
+            
+            let isDragging = false;
+            let startX = 0;
+            let currentX = 0;
+
+            slider.addEventListener('mousedown', startDrag);
+            slider.addEventListener('touchstart', startDrag);
+
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag);
+
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+
+            function startDrag(e) {
+                isDragging = true;
+                startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                slider.style.cursor = 'grabbing';
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                
+                currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                let deltaX = currentX - startX;
+                let maxWidth = container.offsetWidth - slider.offsetWidth;
+                
+                deltaX = Math.max(0, Math.min(deltaX, maxWidth));
+                slider.style.left = deltaX + 'px';
+                
+                if (deltaX >= maxWidth * 0.95) {
+                    loginSliderCompleted = true;
+                    container.classList.add('completed');
+                    text.textContent = '✓ Проверка пройдена';
+                    submitBtn.disabled = false;
+                    isDragging = false;
+                }
+            }
+
+            function stopDrag() {
+                if (isDragging && !loginSliderCompleted) {
+                    slider.style.left = '0px';
+                }
+                isDragging = false;
+                slider.style.cursor = 'grab';
+            }
+        }
+
+        // ==================== EMAIL ВЕРИФИКАЦИЯ ====================
+        
+        let currentVerificationCode = '';
+        let verificationAttempts = 0;
+
+        function generateVerificationCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        function sendVerificationEmail(email) {
+            currentVerificationCode = generateVerificationCode();
+            document.getElementById('verificationEmail').textContent = email;
+            document.getElementById('displayCode').textContent = currentVerificationCode;
+            document.getElementById('emailVerificationModal').classList.add('active');
+            
+            console.log(`📧 Код верификации для ${email}: ${currentVerificationCode}`);
+        }
+
+        function verifyEmail(event) {
+            event.preventDefault();
+            
+            const inputCode = document.getElementById('verificationCodeInput').value;
+            
+            if (inputCode === currentVerificationCode) {
+                if (pendingRegistration) {
+                    const users = Storage.getUsers();
+                    users.push(pendingRegistration);
+                    Storage.saveUsers(users);
+                    
+                    closeModal('emailVerificationModal');
+                    showAuthSuccess('✅ Email подтвержден! Регистрация завершена. Можете войти в систему.');
+                    
+                    setTimeout(() => {
+                        switchAuthTab('login');
+                        document.getElementById('loginUsername').value = pendingRegistration.username;
+                    }, 2000);
+                    
+                    pendingRegistration = null;
+                }
+            } else {
+                verificationAttempts++;
+                if (verificationAttempts >= 3) {
+                    alert('Слишком много неверных попыток. Попробуйте зарегистрироваться снова.');
+                    closeModal('emailVerificationModal');
+                    pendingRegistration = null;
+                    verificationAttempts = 0;
+                } else {
+                    alert(`Неверный код! Осталось попыток: ${3 - verificationAttempts}`);
+                }
+            }
+        }
+
+        function resendCode() {
+            currentVerificationCode = generateVerificationCode();
+            document.getElementById('displayCode').textContent = currentVerificationCode;
+            alert('Новый код отправлен на вашу почту!');
+            console.log(`📧 Новый код: ${currentVerificationCode}`);
+        }
+
+        // ==================== АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ ====================
+        
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelectorAll('.auth-tab')[0].classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.querySelectorAll('.auth-tab')[1].classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+                generateMathCaptcha();
+            }
+            
+            hideAuthMessages();
+        }
+
+        function showAuthError(message) {
+            const errorEl = document.getElementById('authError');
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+        }
+
+        function showAuthSuccess(message) {
+            const successEl = document.getElementById('authSuccess');
+            successEl.textContent = message;
+            successEl.classList.add('active');
+        }
+
+        function hideAuthMessages() {
+            document.getElementById('authError').classList.remove('active');
+            document.getElementById('authSuccess').classList.remove('active');
+        }
+
+        function register(event) {
+            event.preventDefault();
+            hideAuthMessages();
+
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+            const mathAnswer = parseInt(document.getElementById('mathAnswer').value);
+
+            // Проверка CAPTCHA
+            if (mathAnswer !== mathCaptchaAnswer) {
+                showAuthError('❌ Неверный ответ на математический вопрос!');
+                generateMathCaptcha();
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                showAuthError('Пароли не совпадают!');
+                return;
+            }
+
+            const users = Storage.getUsers();
+            
+            if (users.find(u => u.username === username)) {
+                showAuthError('Пользователь с таким именем уже существует!');
+                return;
+            }
+
+            if (users.find(u => u.email === email)) {
+                showAuthError('Email уже зарегистрирован!');
+                return;
+            }
+
+            // Создаем временного пользователя для верификации
+            pendingRegistration = {
+                id: Date.now(),
+                username,
+                email,
+                password,
+                bio: 'Привет! Я новый пользователь TintiHub 👋',
+                createdAt: new Date().toISOString(),
+                avatar: `https://ui-avatars.com/api/?name=${username}&background=7c3aed&color=fff`,
+                verified: false,
+                verificationRequested: false
+            };
+
+            // Отправляем email с кодом
+            sendVerificationEmail(email);
+            event.target.reset();
+        }
+
+        function login(event) {
+            event.preventDefault();
+            hideAuthMessages();
+
+            if (!loginSliderCompleted) {
+                showAuthError('Пожалуйста, завершите проверку безопасности!');
+                return;
+            }
+
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const users = Storage.getUsers();
+            const user = users.find(u => 
+                (u.username === username || u.email === username) && u.password === password
+            );
+
+            if (!user) {
+                showAuthError('Неверное имя пользователя или пароль!');
+                return;
+            }
+
+            Storage.setCurrentUser(user);
+            initApp();
+        }
+
+        function logout() {
+            if (confirm('Вы уверены, что хотите выйти?')) {
+                Storage.setCurrentUser(null);
+                document.getElementById('mainApp').classList.add('hidden');
+                document.getElementById('authPage').classList.remove('hidden');
+                loginSliderCompleted = false;
+                location.reload();
+            }
+        }
+
+        function initApp() {
+            const user = Storage.getCurrentUser();
+            if (!user) {
+                document.getElementById('authPage').classList.remove('hidden');
+                document.getElementById('mainApp').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('authPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+
+            document.getElementById('currentUsername').textContent = user.username;
+            document.getElementById('navAvatar').src = user.avatar;
+            
+            // Показываем галочку если верифицирован
+            if (user.verified) {
+                document.getElementById('navVerifiedBadge').innerHTML = '<span class="verified-badge"><i class="fas fa-check"></i></span>';
+            }
+            
+            loadRepos();
+            loadActivities();
+            loadNotifications();
+            createStars();
+        }
+
+        // ==================== ВЕРИФИКАЦИЯ АККАУНТА ====================
+        
+        function requestVerification() {
+            const user = Storage.getCurrentUser();
+            const users = Storage.getUsers();
+            const userIndex = users.findIndex(u => u.id === user.id);
+            
+            if (users[userIndex].verificationRequested) {
+                alert('Ваша заявка уже на рассмотрении! Обычно проверка занимает 1-2 дня.');
+                return;
+            }
+            
+            const repoCount = Storage.getRepos().filter(r => r.owner === user.username).length;
+            
+            if (repoCount < 3) {
+                alert(`Для верификации необходимо иметь минимум 3 публичных репозитория. У вас: ${repoCount}`);
+                return;
+            }
+            
+            users[userIndex].verificationRequested = true;
+            users[userIndex].verificationRequestDate = new Date().toISOString();
+            Storage.saveUsers(users);
+            Storage.setCurrentUser(users[userIndex]);
+            
+            addNotification('🎉 Заявка на верификацию отправлена!');
+            alert('✅ Заявка отправлена! Мы проверим ваш аккаунт в ближайшее время.');
+            showSettings();
+        }
+
+        function instantVerify() {
+            if (!confirm('🎉 Получить мгновенную верификацию? (Только для демонстрации)')) {
+                return;
+            }
+            
+            const user = Storage.getCurrentUser();
+            const users = Storage.getUsers();
+            const userIndex = users.findIndex(u => u.id === user.id);
+            
+            users[userIndex].verified = true;
+            users[userIndex].verifiedAt = new Date().toISOString();
+            Storage.saveUsers(users);
+            Storage.setCurrentUser(users[userIndex]);
+            
+            addNotification('🎊 Поздравляем! Вы получили галочку верификации!');
+            alert('🎊 Поздравляем! Вы теперь верифицированный разработчик!');
+            
+            initApp();
+            showProfile();
+        }
+
+        // ==================== ПРОФИЛЬ ====================
+        
+        function showProfile() {
+            hideAllPages();
+            document.getElementById('profilePage').classList.add('active');
+            closeAllPanels();
+
+            const user = Storage.getCurrentUser();
+            const repos = Storage.getRepos().filter(r => r.owner === user.username);
+            const commits = repos.reduce((sum, repo) => sum + (repo.commits?.length || 0), 0);
+            const stars = repos.reduce((sum, repo) => sum + (repo.stars || 0), 0);
+
+            document.getElementById('profileAvatar').src = user.avatar;
+            
+            let usernameHTML = user.username;
+            if (user.verified) {
+                usernameHTML += '<span class="verified-badge"><i class="fas fa-check"></i></span>';
+            }
+            document.getElementById('profileUsername').innerHTML = usernameHTML;
+            
+            document.getElementById('profileBio').textContent = user.bio;
+            document.getElementById('repoCount').textContent = repos.length;
+            document.getElementById('commitCount').textContent = commits;
+            document.getElementById('starCount').textContent = stars;
+
+            const verificationStatus = document.getElementById('verificationStatus');
+            if (user.verified) {
+                verificationStatus.innerHTML = '<i class="fas fa-check-circle"></i> Верифицированный аккаунт';
+                verificationStatus.classList.add('verified');
+            } else if (user.verificationRequested) {
+                verificationStatus.innerHTML = '<i class="fas fa-clock"></i> Заявка на рассмотрении';
+            } else {
+                verificationStatus.innerHTML = '<i class="fas fa-times-circle"></i> Не верифицирован';
+            }
+
+            renderUserRepos();
+        }
+
+        function renderUserRepos() {
+            const user = Storage.getCurrentUser();
+            const repos = Storage.getRepos().filter(r => r.owner === user.username);
+            const grid = document.getElementById('userRepoGrid');
+            
+            if (repos.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 40px;">У вас пока нет репозиториев. Создайте свой первый проект!</p>';
+                return;
+            }
+
+            grid.innerHTML = repos.map(repo => createRepoCard(repo)).join('');
+        }
+
+        // ==================== НАСТРОЙКИ ====================
+        
+        function showSettings() {
+            hideAllPages();
+            document.getElementById('settingsPage').classList.add('active');
+            closeAllPanels();
+
+            const user = Storage.getCurrentUser();
+            document.getElementById('settingsUsername').value = user.username;
+            document.getElementById('settingsEmail').value = user.email;
+            document.getElementById('settingsBio').value = user.bio;
+
+            // Секция верификации
+            const verificationSection = document.getElementById('verificationSection');
+            const repoCount = Storage.getRepos().filter(r => r.owner === user.username).length;
+
+            if (user.verified) {
+                verificationSection.innerHTML = `
+                    <div class="verification-request" style="border-color: var(--success);">
+                        <i class="fas fa-check-circle" style="color: var(--success); font-size: 24px;"></i>
+                        <h4 style="color: var(--success); margin: 10px 0;">Ваш аккаунт верифицирован!</h4>
+                        <p style="color: var(--text-secondary); font-size: 14px;">
+                            Дата верификации: ${new Date(user.verifiedAt).toLocaleDateString()}
+                        </p>
+                    </div>
+                `;
+            } else if (user.verificationRequested) {
+                verificationSection.innerHTML = `
+                    <div class="verification-request" style="border-color: var(--secondary);">
+                        <i class="fas fa-clock" style="color: var(--secondary); font-size: 24px;"></i>
+                        <h4 style="margin: 10px 0;">Заявка на рассмотрении</h4>
+                        <p style="color: var(--text-secondary); font-size: 14px;">
+                            Отправлена: ${new Date(user.verificationRequestDate).toLocaleDateString()}<br>
+                            Обычно проверка занимает 1-2 рабочих дня.
+                        </p>
+                        <button class="btn btn-sm btn-primary" onclick="instantVerify()" style="margin-top: 10px;">
+                            <i class="fas fa-bolt"></i> Мгновенная верификация (DEMO)
+                        </button>
+                    </div>
+                `;
+            } else {
+                verificationSection.innerHTML = `
+                    <div class="info-box">
+                        <i class="fas fa-info-circle"></i>
+                        Требования для верификации:
+                        <ul style="margin: 10px 0 10px 30px;">
+                            <li>Минимум 3 публичных репозитория (у вас: ${repoCount})</li>
+                            <li>Активность на платформе</li>
+                            <li>Реальные проекты с кодом</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary" onclick="requestVerification()" ${repoCount < 3 ? 'disabled' : ''}>
+                        <i class="fas fa-certificate"></i> Запросить верификацию
+                    </button>
+                    ${repoCount >= 3 ? `
+                        <button class="btn btn-secondary" onclick="instantVerify()" style="margin-top: 10px;">
+                            <i class="fas fa-bolt"></i> Мгновенная верификация (DEMO)
+                        </button>
+                    ` : ''}
+                `;
+            }
+        }
+
+        function updateProfile(event) {
+            event.preventDefault();
+
+            const user = Storage.getCurrentUser();
+            const users = Storage.getUsers();
+            
+            const newUsername = document.getElementById('settingsUsername').value;
+            const newEmail = document.getElementById('settingsEmail').value;
+            const newBio = document.getElementById('settingsBio').value;
+
+            if (newUsername !== user.username && users.find(u => u.username === newUsername)) {
+                alert('Это имя уже занято!');
+                return;
+            }
+
+            if (newEmail !== user.email && users.find(u => u.email === newEmail)) {
+                alert('Этот email уже используется!');
+                return;
+            }
+
+            const userIndex = users.findIndex(u => u.id === user.id);
+            users[userIndex].username = newUsername;
+            users[userIndex].email = newEmail;
+            users[userIndex].bio = newBio;
+            users[userIndex].avatar = `https://ui-avatars.com/api/?name=${newUsername}&background=7c3aed&color=fff`;
+
+            Storage.saveUsers(users);
+            Storage.setCurrentUser(users[userIndex]);
+
+            const repos = Storage.getRepos();
+            repos.forEach(repo => {
+                if (repo.owner === user.username) {
+                    repo.owner = newUsername;
+                }
+            });
+            Storage.saveRepos(repos);
+
+            alert('Профиль успешно обновлен!');
+            initApp();
+            showProfile();
+        }
+
+        function changePassword(event) {
+            event.preventDefault();
+
+            const user = Storage.getCurrentUser();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const newPasswordConfirm = document.getElementById('newPasswordConfirm').value;
+
+            if (user.password !== currentPassword) {
+                alert('Текущий пароль неверен!');
+                return;
+            }
+
+            if (newPassword !== newPasswordConfirm) {
+                alert('Новые пароли не совпадают!');
+                return;
+            }
+
+            const users = Storage.getUsers();
+            const userIndex = users.findIndex(u => u.id === user.id);
+            users[userIndex].password = newPassword;
+
+            Storage.saveUsers(users);
+            Storage.setCurrentUser(users[userIndex]);
+
+            alert('Пароль успешно изменен!');
+            event.target.reset();
+        }
+
+        function deleteAccount() {
+            if (!confirm('Вы уверены? Все ваши данные будут удалены безвозвратно!')) {
+                return;
+            }
+
+            if (!confirm('Это действие нельзя отменить! Продолжить?')) {
+                return;
+            }
+
+            const user = Storage.getCurrentUser();
+            
+            let users = Storage.getUsers();
+            users = users.filter(u => u.id !== user.id);
+            Storage.saveUsers(users);
+
+            let repos = Storage.getRepos();
+            repos = repos.filter(r => r.owner !== user.username);
+            Storage.saveRepos(repos);
+
+            logout();
+        }
+
+        // ==================== РЕПОЗИТОРИИ ====================
+        
+        function createRepo(event) {
+            event.preventDefault();
+
+            const user = Storage.getCurrentUser();
+            const name = document.getElementById('repoName').value;
+            const description = document.getElementById('repoDescription').value;
+            const visibility = document.getElementById('repoVisibility').value;
+            const language = document.getElementById('repoLanguage').value;
+
+            const repos = Storage.getRepos();
+
+            if (repos.find(r => r.name === name && r.owner === user.username)) {
+                alert('У вас уже есть репозиторий с таким названием!');
+                return;
+            }
+
+            const newRepo = {
+                id: Date.now(),
+                name,
+                description,
+                visibility,
+                language,
+                owner: user.username,
+                ownerVerified: user.verified,
+                createdAt: new Date().toISOString(),
+                stars: 0,
+                forks: 0,
+                commits: [],
+                files: [{
+                    name: 'README.md',
+                    content: `# ${name}\n\n${description || 'Описание проекта'}\n\n## Установка\n\n\`\`\`bash\ngit clone https://tintihub.com/${user.username}/${name}.git\n\`\`\``,
+                    createdAt: new Date().toISOString()
+                }]
+            };
+
+            repos.push(newRepo);
+            Storage.saveRepos(repos);
+
+            addActivity(`Создан репозиторий`, name);
+
+            const msg = document.getElementById('repoSuccessMessage');
+            msg.textContent = 'Репозиторий успешно создан!';
+            msg.classList.add('active');
+
+            event.target.reset();
+
+            setTimeout(() => {
+                closeModal('newRepoModal');
+                loadRepos();
+                addNotification(`Создан новый репозиторий: ${name}`);
+            }, 1500);
+        }
+
+        function loadRepos() {
+            const repos = Storage.getRepos();
+            const grid = document.getElementById('repoGrid');
+            
+            if (repos.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 40px; grid-column: 1/-1;">Пока нет репозиториев. Создайте первый!</p>';
+                return;
+            }
+
+            grid.innerHTML = repos.map(repo => createRepoCard(repo)).join('');
+        }
+
+        function createRepoCard(repo) {
+            const languageColors = {
+                javascript: '#3b82f6',
+                python: '#a855f7',
+                typescript: '#06b6d4',
+                java: '#ef4444',
+                csharp: '#10b981',
+                cpp: '#f59e0b',
+                html: '#e11d48',
+                css: '#2563eb'
+            };
+
+            const user = Storage.getCurrentUser();
+            const isOwner = repo.owner === user.username;
+            const deleteBtn = isOwner ? `<button class="delete-btn" onclick="deleteRepo(${repo.id}, event)"><i class="fas fa-trash"></i></button>` : '';
+
+            // Получаем информацию о владельце
+            const users = Storage.getUsers();
+            const owner = users.find(u => u.username === repo.owner);
+            const verifiedBadge = owner?.verified ? '<span class="verified-badge"><i class="fas fa-check"></i></span>' : '';
+
+            return `
+                <div class="repo-card" onclick="openRepo(${repo.id})">
+                    ${deleteBtn}
+                    <div class="repo-header">
+                        <h3>
+                            <i class="fas fa-book"></i>
+                            <a href="#" onclick="event.stopPropagation(); openRepo(${repo.id})">${repo.name}</a>
+                        </h3>
+                        <span class="badge ${repo.visibility === 'private' ? 'badge-private' : ''}">${repo.visibility === 'public' ? 'Public' : 'Private'}</span>
+                    </div>
+                    <p class="repo-description">${repo.description || 'Нет описания'}</p>
+                    <div class="repo-stats">
+                        <span><i class="fas fa-circle" style="color: ${languageColors[repo.language]}"></i> ${repo.language}</span>
+                        <span><i class="fas fa-star"></i> ${repo.stars}</span>
+                        <span><i class="fas fa-code-branch"></i> ${repo.forks}</span>
+                        <span class="repo-owner">by ${repo.owner}${verifiedBadge}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function deleteRepo(repoId, event) {
+            event.stopPropagation();
+            
+            if (!confirm('Удалить этот репозиторий?')) {
+                return;
+            }
+
+            let repos = Storage.getRepos();
+            const repo = repos.find(r => r.id === repoId);
+            repos = repos.filter(r => r.id !== repoId);
+            Storage.saveRepos(repos);
+
+            addActivity(`Удален репозиторий`, repo.name);
+            loadRepos();
+        }
+
+        function showMyRepos() {
+            showHome();
+            setTimeout(() => {
+                const user = Storage.getCurrentUser();
+                const repos = Storage.getRepos().filter(r => r.owner === user.username);
+                const grid = document.getElementById('repoGrid');
+                
+                if (repos.length === 0) {
+                    grid.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 40px; grid-column: 1/-1;">У вас пока нет репозиториев.</p>';
+                } else {
+                    grid.innerHTML = repos.map(repo => createRepoCard(repo)).join('');
+                }
+            }, 100);
+        }
+
+        // ==================== СТРАНИЦА РЕПОЗИТОРИЯ ====================
+        
+        let currentRepoId = null;
+
+        function openRepo(repoId) {
+            currentRepoId = repoId;
+            const repos = Storage.getRepos();
+            const repo = repos.find(r => r.id === repoId);
+
+            if (!repo) {
+                alert('Репозиторий не найден!');
+                return;
+            }
+
+            hideAllPages();
+            document.getElementById('repoPage').classList.add('active');
+            closeAllPanels();
+
+            document.getElementById('repoTitle').textContent = repo.name;
+            document.getElementById('repoDesc').textContent = repo.description || 'Нет описания';
+
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = repo.files.map(file => `
+                <li class="file-item" onclick="viewFile('${file.name}')">
+                    <i class="fas fa-file-code"></i>
+                    <span>${file.name}</span>
+                </li>
+            `).join('');
+
+            const commitHistory = document.getElementById('commitHistory');
+            if (repo.commits && repo.commits.length > 0) {
+                commitHistory.innerHTML = repo.commits.map(commit => `
+                    <div class="activity-item">
+                        <i class="fas fa-git-alt activity-icon"></i>
+                        <div class="activity-content">
+                            <strong>${commit.message}</strong>
+                            <div style="font-size: 12px; color: var(--text-secondary);">
+                                ${commit.fileName} - ${new Date(commit.timestamp).toLocaleString()}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                commitHistory.innerHTML = '<p style="color: var(--text-secondary); padding: 20px;">Пока нет коммитов</p>';
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+        function makeCommit(event) {
+            event.preventDefault();
+
+            const fileName = document.getElementById('commitFileName').value;
+            const fileContent = document.getElementById('commitFileContent').value;
+            const message = document.getElementById('commitMessage').value;
+
+            const repos = Storage.getRepos();
+            const repo = repos.find(r => r.id === currentRepoId);
+
+            if (!repo) return;
+
+            const user = Storage.getCurrentUser();
+            if (repo.owner !== user.username) {
+                alert('Вы не можете делать коммиты в чужой репозиторий!');
+                return;
+            }
+
+            const existingFileIndex = repo.files.findIndex(f => f.name === fileName);
+            if (existingFileIndex >= 0) {
+                repo.files[existingFileIndex].content = fileContent;
+                repo.files[existingFileIndex].updatedAt = new Date().toISOString();
+            } else {
+                repo.files.push({
+                    name: fileName,
+                    content: fileContent,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
+            if (!repo.commits) repo.commits = [];
+            repo.commits.unshift({
+                message,
+                fileName,
+                timestamp: new Date().toISOString(),
+                author: user.username
+            });
+
+            Storage.saveRepos(repos);
+            addActivity(`Сделал коммит в`, repo.name);
+            addNotification(`Новый коммит в ${repo.name}: ${message}`);
+
+            event.target.reset();
+            alert('Коммит успешно выполнен!');
+            openRepo(currentRepoId);
+        }
+
+        function viewFile(fileName) {
+            const repos = Storage.getRepos();
+            const repo = repos.find(r => r.id === currentRepoId);
+            const file = repo.files.find(f => f.name === fileName);
+
+            if (file) {
+                alert(`Файл: ${fileName}\n\n${file.content}`);
+            }
+        }
+
+        function toggleStar() {
+            const user = Storage.getCurrentUser();
+            const repos = Storage.getRepos();
+            const repo = repos.find(r => r.id === currentRepoId);
+
+            if (!repo.starredBy) repo.starredBy = [];
+
+            const index = repo.starredBy.indexOf(user.username);
+            if (index >= 0) {
+                repo.starredBy.splice(index, 1);
+                repo.stars--;
+                document.getElementById('starText').textContent = 'Star';
+            } else {
+                repo.starredBy.push(user.username);
+                repo.stars++;
+                document.getElementById('starText').textContent = 'Unstar';
+                addNotification(`Вы поставили звезду репозиторию ${repo.name}`);
+            }
+
+            Storage.saveRepos(repos);
+            openRepo(currentRepoId);
+        }
+
+        function cloneRepo() {
+            const repos = Storage.getRepos();
+            const repo = repos.find(r => r.id === currentRepoId);
+            const cloneUrl = `git clone https://tintihub.com/${repo.owner}/${repo.name}.git`;
+            
+            navigator.clipboard.writeText(cloneUrl).then(() => {
+                alert('Команда для клонирования скопирована в буфер обмена!');
+            });
+        }
+
+        // ==================== АКТИВНОСТИ ====================
+        
+        function addActivity(action, repoName) {
+            const user = Storage.getCurrentUser();
+            const activities = Storage.getActivities();
+            
+            activities.unshift({
+                user: user.username,
+                userVerified: user.verified,
+                action,
+                repo: repoName,
+                timestamp: new Date().toISOString()
+            });
+
+            if (activities.length > 50) {
+                activities.pop();
+            }
+
+            Storage.saveActivities(activities);
+            loadActivities();
+        }
+
+        function loadActivities() {
+            const activities = Storage.getActivities();
+            const list = document.getElementById('activityList');
+
+            if (activities.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-secondary); padding: 20px;">Пока нет активности</p>';
+                return;
+            }
+
+            const icons = {
+                'Создан репозиторий': 'fa-plus',
+                'Удален репозиторий': 'fa-trash',
+                'Сделал коммит в': 'fa-git-alt',
+            };
+
+            list.innerHTML = activities.slice(0, 10).map(activity => {
+                const verifiedBadge = activity.userVerified ? '<span class="verified-badge"><i class="fas fa-check"></i></span>' : '';
+                return `
+                    <div class="activity-item">
+                        <i class="fas ${icons[activity.action] || 'fa-star'} activity-icon"></i>
+                        <div class="activity-content">
+                            <strong>${activity.user}${verifiedBadge}</strong> ${activity.action} <a href="#" onclick="findAndOpenRepo('${activity.repo}')">${activity.repo}</a>
+                            <span class="time">${getTimeAgo(activity.timestamp)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function findAndOpenRepo(repoName) {
+            const repos = Storage.getRepos();
+            const repo = repos.find(r => r.name === repoName);
+            if (repo) {
+                openRepo(repo.id);
+            }
+        }
+
+        // ==================== УВЕДОМЛЕНИЯ ====================
+        
+        function addNotification(message) {
+            const notifications = Storage.getNotifications();
+            
+            notifications.unshift({
+                message,
+                timestamp: new Date().toISOString(),
+                read: false
+            });
+
+            if (notifications.length > 20) {
+                notifications.pop();
+            }
+
+            Storage.saveNotifications(notifications);
+            loadNotifications();
+        }
+
+        function loadNotifications() {
+            const notifications = Storage.getNotifications();
+            const list = document.getElementById('notificationsList');
+            const badge = document.getElementById('notifBadge');
+
+            const unread = notifications.filter(n => !n.read).length;
+            badge.textContent = unread;
+            badge.style.display = unread > 0 ? 'block' : 'none';
+
+            if (notifications.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-secondary); padding: 20px;">Нет уведомлений</p>';
+                return;
+            }
+
+            list.innerHTML = notifications.slice(0, 10).map((notif, index) => `
+                <div class="notification-item" onclick="markAsRead(${index})">
+                    ${notif.message}
+                    <div class="time">${getTimeAgo(notif.timestamp)}</div>
+                </div>
+            `).join('');
+        }
+
+        function markAsRead(index) {
+            const notifications = Storage.getNotifications();
+            notifications[index].read = true;
+            Storage.saveNotifications(notifications);
+            loadNotifications();
+        }
+
+        // ==================== УТИЛИТЫ ====================
+        
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((new Date() - new Date(timestamp)) / 1000);
+            
+            if (seconds < 60) return 'только что';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} мин назад`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} ч назад`;
+            return `${Math.floor(seconds / 86400)} дн назад`;
+        }
+
+        function hideAllPages() {
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('profilePage').classList.remove('active');
+            document.getElementById('settingsPage').classList.remove('active');
+            document.getElementById('repoPage').classList.remove('active');
+        }
+
+        function showHome() {
+            hideAllPages();
+            document.getElementById('homePage').style.display = 'block';
+            closeAllPanels();
+            loadRepos();
+            window.scrollTo(0, 0);
+        }
+
+        function closeAllPanels() {
+            document.getElementById('notificationsPanel').classList.remove('active');
+            document.getElementById('profilePanel').classList.remove('active');
+        }
+
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationsPanel');
+            const profilePanel = document.getElementById('profilePanel');
+            profilePanel.classList.remove('active');
+            panel.classList.toggle('active');
+        }
+
+        function toggleProfile() {
+            const panel = document.getElementById('profilePanel');
+            const notifPanel = document.getElementById('notificationsPanel');
+            notifPanel.classList.remove('active');
+            panel.classList.toggle('active');
+        }
+
+        function openNewRepoModal() {
+            document.getElementById('newRepoModal').classList.add('active');
+            document.getElementById('repoSuccessMessage').classList.remove('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                closeModal(e.target.id);
+            }
+
+            if (!e.target.closest('.nav-link') && !e.target.closest('.profile-pic') && 
+                !e.target.closest('.notifications-panel') && !e.target.closest('.profile-panel')) {
+                closeAllPanels();
+            }
+        });
+
+        document.getElementById('searchInput')?.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.repo-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+
+        function createStars() {
+            const container = document.getElementById('starsContainer');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.animation = `twinkle ${2 + Math.random() * 3}s infinite`;
+                container.appendChild(star);
+            }
+        }
+
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        
+        window.addEventListener('load', () => {
+            generateMathCaptcha();
+            initLoginSlider();
+            initApp();
+        });
+    </script>
+</body>
+</html>
